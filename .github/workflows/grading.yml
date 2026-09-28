@@ -60,6 +60,13 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare email when grading did not start
+        if: always()
+        run: |
+          if [ ! -s grade_summary.md ]; then
+            echo 'He thong cham chua hoan tat. Kiem tra Actions cho PR nay.' > grade_summary.md
+          fi
+
       - name: Email private result to owner
         if: always()
         uses: dawidd6/action-send-mail@v6
@@ -71,5 +78,6 @@ jobs:
           subject: 'Ket qua cham PR #${{ github.event.pull_request.number }}'
           to: lamtoan185@gmail.com
           from: lamtoan185@gmail.com
-          body: 'PR: ${{ github.event.pull_request.html_url }}. Bao cao chi tiet dinh kem (neu cham hoan tat).'
-          attachments: grade_summary.md
+          body: file://grade_summary.md
+          html_body: file://grade_summary.md
+          convert_markdown: true
