@@ -1,0 +1,91 @@
+# Auto-grader workflow for the PUBLIC starter repo.
+# Secret tests are fetched at runtime from the private repo Ce1lo/rest-api-grader
+# using the GRADER_PAT secret. See SETUP.md in the grader repo (team only).
+#
+# IMPORTANT: pull_request_target (not pull_request) so fork PRs can read
+# GRADER_PAT. This file runs trusted base-repo code; only the checkout step
+# pulls untrusted student code for testing.
+
+name: Auto grade assignment
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout student PR code (untrusted, for testing only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install submission dependencies
+        run: npm ci || npm install
+
+      - name: Fetch secret grader (trusted)
+        uses: actions/checkout@v4
+        with:
+          repository: Ce1lo/rest-api-grader
+          token: ${{ secrets.GRADER_PAT }}
+          path: .grader
+
+      - name: Run secret grader
+        env:
+          MONGO_URI: mongodb://127.0.0.1:27017/grading_${{ github.event.pull_request.number }}
+          SUBMISSION_DIR: ${{ github.workspace }}
+          GRADE_OUTPUT: ${{ github.workspace }}/grade_report.json
+          GRADE_SUMMARY: ${{ github.workspace }}/grade_summary.md
+        run: node .grader/grader/run.js
+
+      - name: Comment score on the PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- auto-grader -->';
+            let body = marker + '\nChua co ket qua cham.';
+            try {
+              const summary = fs.readFileSync('grade_summary.md', 'utf8');
+              body = marker + '\n' + summary;
+            } catch (e) {
+              body = marker + '\nHe thong cham gap su co ha tang, vui long bao cho nhom ra de. Chi tiet trong tab Actions.';
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const mine = comments.find(c => c.body && c.body.includes(marker));
+            if (mine) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: mine.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
