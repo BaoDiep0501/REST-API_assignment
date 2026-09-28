@@ -75,12 +75,12 @@ jobs:
         with:
           repository: Ce1lo/rest-api-grader
           token: ${{ secrets.GRADER_PAT }}
-          path: ${{ runner.temp }}/private-grader
+          path: .grader
           persist-credentials: false
 
       - name: Install grader dependencies
         run: |
-          cd "${{ runner.temp }}/private-grader"
+          cd .grader
           npm install --ignore-scripts --no-audit --no-fund
 
       - name: Run secret grader
@@ -90,7 +90,7 @@ jobs:
           GRADE_OUTPUT: ${{ github.workspace }}/grade_report.json
           GRADE_SUMMARY: ${{ github.workspace }}/grade_summary.md
         run: |
-          if ! node "${{ runner.temp }}/private-grader/grader/run.js" > "$RUNNER_TEMP/grader.log" 2>&1; then
+          if ! node .grader/grader/run.js > "$RUNNER_TEMP/grader.log" 2>&1; then
             echo 'He thong cham gap su co. Xem log noi bo cua nguoi quan ly.' > grade_summary.md
             exit 1
           fi
