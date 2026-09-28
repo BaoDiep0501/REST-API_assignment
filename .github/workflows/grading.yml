@@ -3,8 +3,7 @@
 # using the GRADER_PAT secret. See SETUP.md in the grader repo (team only).
 #
 # IMPORTANT: pull_request_target (not pull_request) so fork PRs can read
-# GRADER_PAT. This file runs trusted base-repo code; only the checkout step
-# pulls untrusted student code for testing.
+# GRADER_PAT. This file runs the base-repo workflow; student code is untrusted.
 
 name: Auto grade assignment
 
@@ -13,7 +12,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  pull-requests: write
+  contents: read
 
 jobs:
   grade:
@@ -31,6 +30,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -46,6 +46,7 @@ jobs:
           repository: Ce1lo/rest-api-grader
           token: ${{ secrets.GRADER_PAT }}
           path: .grader
+          persist-credentials: false
 
       - name: Run secret grader
         env:
@@ -53,39 +54,22 @@ jobs:
           SUBMISSION_DIR: ${{ github.workspace }}
           GRADE_OUTPUT: ${{ github.workspace }}/grade_report.json
           GRADE_SUMMARY: ${{ github.workspace }}/grade_summary.md
-        run: node .grader/grader/run.js
+        run: |
+          if ! node .grader/grader/run.js > "$RUNNER_TEMP/grader.log" 2>&1; then
+            echo 'He thong cham gap su co. Xem log noi bo cua nguoi quan ly.' > grade_summary.md
+            exit 1
+          fi
 
-      - name: Comment score on the PR
-        uses: actions/github-script@v7
+      - name: Email private result to owner
+        if: always()
+        uses: dawidd6/action-send-mail@v6
         with:
-          script: |
-            const fs = require('fs');
-            const marker = '<!-- auto-grader -->';
-            let body = marker + '\nChua co ket qua cham.';
-            try {
-              const summary = fs.readFileSync('grade_summary.md', 'utf8');
-              body = marker + '\n' + summary;
-            } catch (e) {
-              body = marker + '\nHe thong cham gap su co ha tang, vui long bao cho nhom ra de. Chi tiet trong tab Actions.';
-            }
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const mine = comments.find(c => c.body && c.body.includes(marker));
-            if (mine) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: mine.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: lamtoan185@gmail.com
+          password: ${{ secrets.GRADER_MAIL_APP_PASSWORD }}
+          subject: 'Ket qua cham PR #${{ github.event.pull_request.number }}'
+          to: lamtoan185@gmail.com
+          from: lamtoan185@gmail.com
+          body: 'PR: ${{ github.event.pull_request.html_url }}. Bao cao chi tiet dinh kem (neu cham hoan tat).'
+          attachments: grade_summary.md
