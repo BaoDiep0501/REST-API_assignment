@@ -18,7 +18,7 @@ Yêu cầu Node.js 22+, MongoDB (Atlas hoặc local).
 1. Trên GitHub, fork repo bài tập về tài khoản của bạn. Clone fork của bạn về máy (thay URL bằng URL fork):
    ```bash
    git clone <URL-fork-cua-ban>
-   cd rest-api_assignment
+    cd rest-api_assignment-2026
    npm ci
    cp .env.example .env
    ```
@@ -65,7 +65,7 @@ Hoàn thành 2 API Endpoint bị thiếu tại `routes/studentRoutes.js`. Tuyệ
 2. Clone fork về máy, tạo nhánh làm bài riêng (không code trực tiếp trên `main`):
    ```bash
    git clone <URL-fork-cua-ban>
-   cd rest-api_assignment
+    cd rest-api_assignment-2026
    git checkout -b lam-bai
    ```
 3. Sau khi code và test bằng Postman xong, commit và push nhánh làm bài lên fork của bạn:
