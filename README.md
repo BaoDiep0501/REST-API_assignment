@@ -54,7 +54,7 @@ Hoàn thành 2 API Endpoint bị thiếu tại `routes/studentRoutes.js`. Tuyệ
 
 ---
 
-## Kiểm tra thủ công API bằng Postman
+## Kiểm tra API bằng Postman
 1. Mở Postman và import `postman/StudentExercise.postman_collection.json`.
 2. Đảm bảo server đang chạy, sau đó gửi request `GET /api/students` để xem dữ liệu mẫu và lấy `_id` của một sinh viên.
 3. Sao chép `_id` từ kết quả GET và điền vào biến `studentId` của collection. Dùng biến này khi gửi request `PATCH` hoặc `DELETE`. Với PATCH, gửi body dạng JSON.
@@ -68,11 +68,14 @@ Hoàn thành 2 API Endpoint bị thiếu tại `routes/studentRoutes.js`. Tuyệ
    cd rest-api_assignment-2026
    git checkout -b lam-bai
    ```
-3. Sau khi code và test bằng Postman xong, commit và push nhánh làm bài lên fork của bạn:
+3. Sau khi code và test xong, commit và push nhánh làm bài lên fork của bạn:
    ```bash
    git add routes/studentRoutes.js
    git commit -m "Hoan thanh bai tap PATCH va DELETE"
    git push origin lam-bai
    ```
-4. Trên trang fork của bạn, bấm **Compare & pull request**, chọn base là repo gốc nhánh `main`, head là fork của bạn nhánh `lam-bai`, rồi bấm **Create pull request**.
-5. Dán link Pull Request để nộp bài. Giữ PR mở cho tới khi có kết quả chấm.
+4. Trên trang fork của bạn, bấm **Compare & pull request**:
+   - Base repository: `Ce1lo/rest-api_assignment-2026`, base branch: `main`
+   - Head repository: fork của bạn, compare branch: `lam-bai`
+   - Bấm **Create pull request**.
+5. Dán link Pull Request để nộp bài. **Giữ PR mở cho tới khi có điểm, tuyệt đối không đóng và không tự bấm Merge PR.**
