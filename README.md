@@ -54,7 +54,7 @@ Hoàn thành 2 API Endpoint bị thiếu tại `routes/studentRoutes.js`. Tuyệ
 
 ---
 
-## Kiểm tra API bằng Postman
+## Kiểm tra thủ công API bằng Postman
 1. Mở Postman và import `postman/StudentExercise.postman_collection.json`.
 2. Đảm bảo server đang chạy, sau đó gửi request `GET /api/students` để xem dữ liệu mẫu và lấy `_id` của một sinh viên.
 3. Sao chép `_id` từ kết quả GET và điền vào biến `studentId` của collection. Dùng biến này khi gửi request `PATCH` hoặc `DELETE`. Với PATCH, gửi body dạng JSON.
